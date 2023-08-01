@@ -79,17 +79,25 @@ func (c *Client) RetrievePage(ctx context.Context, pageID string) (*Page, error)
 	return &page, nil
 }
 
+type CreatePageRequest struct {
+	Body CreatePageBody `json:"body"`
+}
+
+type CreatePageBody struct {
+	Parent     Parent                    `json:"parent,omitempty"`
+	Properties map[string]*PropertyValue `json:"properties"`
+	Children   []*Block                  `json:"children,omitempty"`
+}
+
 // CreatePage implements API.CreatePage.
 func (c *Client) CreatePage(ctx context.Context, parent Parent, properties map[string]*PropertyValue, children ...*Block) (*Page, error) {
-	parent.Type = ""
-	body := struct {
-		Parent     Parent                    `json:"parent,omitempty"`
-		Properties map[string]*PropertyValue `json:"properties"`
-		Children   []*Block                  `json:"children,omitempty"`
-	}{
-		Parent:     parent,
-		Properties: properties,
-		Children:   children,
+	//parent.Type = ""
+	body := CreatePageRequest{
+		Body: CreatePageBody{
+			Parent:     parent,
+			Properties: properties,
+			Children:   children,
+		},
 	}
 	var page Page
 	if err := c.request(ctx, http.MethodPost, "/v1/pages", body, &page); err != nil {
